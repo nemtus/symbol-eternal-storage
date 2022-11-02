@@ -1,5 +1,9 @@
 {
   "projects": {
-    "default": "symbol-eternal-storage-test"
-  }
+    "default": "symbol-eternal-storage-test",
+    "testnet": "symbol-eternal-storage-test",
+    "mainnet": "symbol-eternal-storage"
+  },
+  "targets": {},
+  "etags": {}
 }
