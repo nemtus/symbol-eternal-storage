@@ -22,6 +22,8 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "build:testnet": "dotenv -e .env.testnet react-scripts build",
+    "build:mainnet": "dotenv -e .env.mainnet react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "eslint --ext 'src/**/*.{js,jsx,ts,tsx}'",
