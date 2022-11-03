@@ -17,6 +17,7 @@ import {
 } from 'symbol-sdk';
 import { AdminUser } from '../../../v1/models/adminUser';
 import { AdminUserTransaction } from '../../../v1/models/adminUserTransaction';
+import { CreateAndSetUpNewAccountMessage } from '../../../v1/models/message';
 import { db } from '../../firebase/firebase';
 import { logger } from '../../firebase/logger';
 import { epochAdjustment, networkGenerationHash, networkType } from '../network';
@@ -64,7 +65,7 @@ export const sendAggregateCompleteTransactionToCreateAndSetUpNewAccount = async 
 
   logger.debug('embeddedTransferTransaction');
   const deadline = Deadline.create(epochAdjustment);
-  const messageJson = {
+  const messageJson: CreateAndSetUpNewAccountMessage = {
     serviceId: userServiceStoragePublicAccount.address.plain(),
     serviceName: 'Symbol Eternal Storage',
     userId: createAndSetUpNewAccountInfo.userId,
