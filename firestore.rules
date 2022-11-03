@@ -37,6 +37,13 @@ service cloud.firestore {
       allow update: if isAdmin();
     }
 
+    match /v/1/types/admin/users/{userId}/transactions/{transactionId} {
+      allow get: if isAdmin();
+      allow list: if isAdmin();
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+    }
+
     match /v/1/types/admin/users/{userId}/files/{fileId} {
       allow get: if isAdmin();
       allow list: if isAdmin();
@@ -62,29 +69,36 @@ service cloud.firestore {
     match /v/1/types/private/users/{userId} {
       allow get: if isUserOrAdminAuthenticated(userId);
       allow list: if isUserOrAdminAuthenticated(userId);
-      allow create: if isUserOrAdminAuthenticated(userId);
-      allow update: if isUserOrAdminAuthenticated(userId);
+      // allow create: if isUserOrAdminAuthenticated(userId);
+      // allow update: if isUserOrAdminAuthenticated(userId);
+    }
+
+    match /v/1/types/private/users/{userId}/transactions/{transactionId} {
+      allow get: if isUserOrAdminAuthenticated(userId);
+      allow list: if isUserOrAdminAuthenticated(userId);
+      // allow create: if isUserOrAdminAuthenticated(userId);
+      // allow update: if isUserOrAdminAuthenticated(userId);
     }
 
     match /v/1/types/private/users/{userId}/files/{fileId} {
       allow get: if isUserOrAdminAuthenticated(userId);
       allow list: if isUserOrAdminAuthenticated(userId);
-      allow create: if isUserOrAdminAuthenticated(userId);
-      allow update: if isUserOrAdminAuthenticated(userId);
+      // allow create: if isUserOrAdminAuthenticated(userId);
+      // allow update: if isUserOrAdminAuthenticated(userId);
     }
 
     match /v/1/types/private/users/{userId}/files/{fileId}/transactions/{transactionId} {
       allow get: if isUserOrAdminAuthenticated(userId);
       allow list: if isUserOrAdminAuthenticated(userId);
-      allow create: if isUserOrAdminAuthenticated(userId);
-      allow update: if isUserOrAdminAuthenticated(userId);
+      // allow create: if isUserOrAdminAuthenticated(userId);
+      // allow update: if isUserOrAdminAuthenticated(userId);
     }
 
     match /v/1/types/private/users/{userId}/files/{fileId}/transactions/{transactionId}/embededs/{embeddedId} {
       allow get: if isUserOrAdminAuthenticated(userId);
       allow list: if isUserOrAdminAuthenticated(userId);
-      allow create: if isUserOrAdminAuthenticated(userId);
-      allow update: if isUserOrAdminAuthenticated(userId);
+      // allow create: if isUserOrAdminAuthenticated(userId);
+      // allow update: if isUserOrAdminAuthenticated(userId);
     }
   }
 }
