@@ -4,18 +4,16 @@ import { hasAlreadyTriggered } from '../../utils/firebase/hasAlreadyTriggered';
 import { UserRecord } from 'firebase-functions/lib/common/providers/identity';
 import { CloudFunction } from 'firebase-functions/lib/cloud-functions';
 import { logger } from '../../utils/firebase/logger';
+import { db } from '../../utils/firebase/firebase';
 import { defineSecret } from 'firebase-functions/v2/params';
 import {
   convertPrivateKeyStringToPublicKeyString,
   convertPublicKeyStringToAddressString,
   createNewPrivateKeyString,
 } from '../../utils/symbol/key';
-import {
-  convertHexStringToBuffer,
-  createIvHexString,
-  createSaltBase64String,
-  encrypt,
-} from '../../utils/cipher/encrypt';
+import { createIvHexString, createSaltBase64String, encrypt } from '../../utils/cipher/encrypt';
+import { AdminUser } from '../models/adminUser';
+import { convertAdminUserToPrivateUser, PrivateUser } from '../models/privateUser';
 
 const SERVICE_FEE_PAYER_ACCOUNT_PRIVATE_KEY = defineSecret('SERVICE_FEE_PAYER_ACCOUNT_PRIVATE_KEY');
 const SERVICE_STORAGE_ACCOUNT_PRIVATE_KEY = defineSecret('SERVICE_STORAGE_ACCOUNT_PRIVATE_KEY');
@@ -41,8 +39,8 @@ _exportFunction('onCreate', () =>
       });
 
       const userId = userRecord.uid;
-      const userDisplayName = userRecord.displayName;
-      const userPhotoUrl = userRecord.photoURL;
+      const userDisplayName = userRecord.displayName ?? '';
+      const userPhotoUrl = userRecord.photoURL ?? '';
 
       const symbolNetworkName = process.env.SYMBOL_NETWORK_NAME;
       if (symbolNetworkName !== 'testnet' && symbolNetworkName !== 'mainnet') {
@@ -51,7 +49,6 @@ _exportFunction('onCreate', () =>
 
       const userSaltBase64String = createSaltBase64String();
       const userIvHexString = createIvHexString();
-      const userIv = convertHexStringToBuffer(userIvHexString);
       const password = SERVICE_ENCRYPT_KEY.value();
 
       const serviceFeePayerAccountPrivateKeyString = SERVICE_FEE_PAYER_ACCOUNT_PRIVATE_KEY.value();
@@ -77,7 +74,7 @@ _exportFunction('onCreate', () =>
         userMultisigAccountPrivateKeyString,
         password,
         userSaltBase64String,
-        userIv,
+        userIvHexString,
       );
       const userMultisigAccountPublicKeyString = convertPrivateKeyStringToPublicKeyString(
         userMultisigAccountPrivateKeyString,
@@ -92,7 +89,7 @@ _exportFunction('onCreate', () =>
         userCosigner1AccountPrivateKeyString,
         password,
         userSaltBase64String,
-        userIv,
+        userIvHexString,
       );
       const userCosigner1AccountPublicKeyString = convertPrivateKeyStringToPublicKeyString(
         userCosigner1AccountPrivateKeyString,
@@ -107,7 +104,7 @@ _exportFunction('onCreate', () =>
         userCosigner2AccountPrivateKeyString,
         password,
         userSaltBase64String,
-        userIv,
+        userIvHexString,
       );
       const userCosigner2AccountPublicKeyString = convertPrivateKeyStringToPublicKeyString(
         userCosigner2AccountPrivateKeyString,
@@ -122,7 +119,7 @@ _exportFunction('onCreate', () =>
         userCosigner3AccountPrivateKeyString,
         password,
         userSaltBase64String,
-        userIv,
+        userIvHexString,
       );
       const userCosigner3AccountPublicKeyString = convertPrivateKeyStringToPublicKeyString(
         userCosigner3AccountPrivateKeyString,
@@ -132,7 +129,14 @@ _exportFunction('onCreate', () =>
         symbolNetworkName,
       );
 
-      const adminUser = {
+      const userMultisigAccountModified = false;
+      const userAccountRestricted = false;
+      const userAccountPrepared = false;
+      const now = new Date();
+      const userCreatedAt = now;
+      const userUpdatedAt = now;
+
+      const adminUser: AdminUser = {
         userId,
         userDisplayName,
         userPhotoUrl,
@@ -142,6 +146,9 @@ _exportFunction('onCreate', () =>
         userServiceFeePayerAccountAddressString,
         userServiceStorageAccountPublicKeyString,
         userServiceStorageAccountAddressString,
+        userMultisigAccountModified,
+        userAccountRestricted,
+        userAccountPrepared,
         userMultisigAccountPrivateKeyEncryptedString,
         userMultisigAccountPublicKeyString,
         userMultisigAccountAddressString,
@@ -154,29 +161,14 @@ _exportFunction('onCreate', () =>
         userCosigner3AccountPrivateKeyEncryptedString,
         userCosigner3AccountPublicKeyString,
         userCosigner3AccountAddressString,
+        userCreatedAt,
+        userUpdatedAt,
       };
       logger.debug({ adminUser });
+      await db.doc(`v/1/types/admin/users/${userId}`).set(adminUser);
 
-      const privateUser = {
-        userId,
-        userDisplayName,
-        userPhotoUrl,
-        userSaltBase64String,
-        userIvHexString,
-        userServiceFeePayerAccountPublicKeyString,
-        userServiceFeePayerAccountAddressString,
-        userServiceStorageAccountPublicKeyString,
-        userServiceStorageAccountAddressString,
-        userMultisigAccountPrivateKeyEncryptedString,
-        userMultisigAccountPublicKeyString,
-        userMultisigAccountAddressString,
-        userCosigner1AccountPublicKeyString,
-        userCosigner1AccountAddressString,
-        userCosigner2AccountPublicKeyString,
-        userCosigner2AccountAddressString,
-        userCosigner3AccountPublicKeyString,
-        userCosigner3AccountAddressString,
-      };
+      const privateUser: PrivateUser = convertAdminUserToPrivateUser(adminUser);
       logger.debug({ privateUser });
+      await db.doc(`v/1/types/private/users/${userId}`).set(privateUser);
     }),
 );
