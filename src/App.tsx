@@ -13,6 +13,7 @@ const FileCreatePageComponent = loadable(() => import('./components/pages/users/
 const FileUpdatePageComponent = loadable(() => import('./components/pages/users/[userId]/files/[fileId]/update'));
 const FilePageComponent = loadable(() => import('./components/pages/users/[userId]/files/[fileId]'));
 const FilesPageComponent = loadable(() => import('./components/pages/users/[userId]/files'));
+const NotAuthenticatedPageComponent = loadable(() => import('./components/widgets/not-authenticated'));
 const NotFoundWidgetComponent = loadable(() => import('./components/widgets/not-found'));
 
 function App() {
@@ -20,6 +21,12 @@ function App() {
     <AuthUserProvider>
       <BrowserRouter>
         <AppHeaderWidget></AppHeaderWidget>
+        {process.env.REACT_APP_SYMBOL_NETWORK_NAME === 'testnet' ? (
+          <div className="flex justify-center">
+            This is testnet version. Please note that data may be deleted without notice as a result of test net resets,
+            etc.
+          </div>
+        ) : null}
         <Routes>
           <Route path="/" element={<HomePageComponent />}></Route>
           <Route path="/auth/sign-in" element={<AuthSignInPageComponent />}></Route>
@@ -29,6 +36,7 @@ function App() {
           <Route path="/users/:userId/files/:fileId/update" element={<FileUpdatePageComponent />}></Route>
           <Route path="/users/:userId/files/:fileId" element={<FilePageComponent />}></Route>
           <Route path="/users/:userId/files" element={<FilesPageComponent />}></Route>
+          <Route path="/not-authenticated" element={<NotAuthenticatedPageComponent />}></Route>
           <Route path="/*" element={<NotFoundWidgetComponent />}></Route>
         </Routes>
       </BrowserRouter>

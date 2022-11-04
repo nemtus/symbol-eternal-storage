@@ -27,7 +27,7 @@ const signOut = async () => {
 
 const AuthUserContext = createContext<AuthUserContextInterface>({
   authUser: null,
-  authUserLoading: false,
+  authUserLoading: true,
   authUserError: null,
   signInWithGoogle,
   signOut,
@@ -64,14 +64,23 @@ export function AuthUserProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    const unsubscribed = onAuthStateChanged(auth, (currentAuthUser) => {
-      console.log(currentAuthUser);
-      setAuthUser(currentAuthUser);
-    });
+    const unsubscribed = onAuthStateChanged(
+      auth,
+      (currentAuthUser) => {
+        setAuthUserLoading(true);
+        setAuthUser(currentAuthUser);
+        setAuthUserLoading(false);
+      },
+      (error) => {
+        setAuthUserLoading(true);
+        setAuthUserError(error);
+        setAuthUserLoading(false);
+      },
+    );
     return () => {
       unsubscribed();
     };
-  }, []);
+  }, [setAuthUser, setAuthUserLoading, setAuthUserError]);
 
   const values = {
     authUser,
