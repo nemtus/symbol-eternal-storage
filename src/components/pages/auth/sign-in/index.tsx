@@ -1,9 +1,13 @@
 import React, { useEffect } from 'react';
+import { useAuthState } from 'react-firebase-hooks/auth';
 import { useNavigate } from 'react-router';
 import { useAuthUserContext } from '../../../../contexts/auth';
+import { auth } from '../../../../utils/firebase';
+import SignInCardWidgetComponent from '../../../widgets/card/SignInCard';
 
 const AuthSignInPageComponent = () => {
-  const { authUser, signInWithGoogle } = useAuthUserContext();
+  const { signInWithGoogle } = useAuthUserContext();
+  const [authUser, authUserLoading] = useAuthState(auth);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -12,12 +16,10 @@ const AuthSignInPageComponent = () => {
     }
   }, [authUser]);
 
-  return (
-    <div>
-      <h2>Sign In</h2>
-      <button onClick={signInWithGoogle}>Sign in with Google</button>
-    </div>
-  );
+  if (authUser || authUserLoading) {
+    return null;
+  }
+  return <SignInCardWidgetComponent signInWithGoogle={signInWithGoogle} />;
 };
 
 export default AuthSignInPageComponent;
