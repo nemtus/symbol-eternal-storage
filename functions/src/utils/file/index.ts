@@ -1,8 +1,8 @@
 export const sliceChunksByNumber = (chunks: string[], number: number): string[][] => {
   const length = Math.ceil(chunks.length / number);
-  const array: string[][] = new Array(length).fill([]);
-  array.map((_, i) => {
-    chunks.slice(i * number, (i + 1) * number);
+  const array: string[][] = new Array(length).fill(undefined).map((_, i) => {
+    const chunkArray = chunks.slice(i * number, (i + 1) * number);
+    return chunkArray;
   });
   return array;
 };
