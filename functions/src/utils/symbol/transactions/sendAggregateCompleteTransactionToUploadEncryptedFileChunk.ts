@@ -12,6 +12,7 @@ import {
   CosignatureSignedTransaction,
   TransactionMapping,
   RepositoryFactoryHttp,
+  TransactionInfo,
 } from 'symbol-sdk';
 import { PrivateUserFile } from '../../../v1/models/privateUserFile';
 import { AdminUserTransaction } from '../../../v1/models/adminUserTransaction';
@@ -20,7 +21,10 @@ import { db } from '../../firebase/firebase';
 import { logger } from '../../firebase/logger';
 import { epochAdjustment, networkGenerationHash, networkType } from '../network';
 import { selectRandomNode } from '../node';
-import { PrivateUserFileTransactionInfo } from '../../../v1/models/privateUserFileTransaction';
+import {
+  PrivateUserFileTransaction,
+  PrivateUserFileTransactionInfo,
+} from '../../../v1/models/privateUserFileTransaction';
 
 export interface UploadEncryptedFileChunkInfo {
   userId: string;
@@ -37,7 +41,6 @@ export const sendAggregateCompleteTransactionToUploadEncryptedFileChunk = async 
   uploadEncryptedFileChunkInfo: UploadEncryptedFileChunkInfo,
 ) => {
   logger.debug('sendAggregateCompleteTransactionToUploadEncryptedFileChunk start');
-  logger.debug({ uploadEncryptedFileChunkInfo });
 
   const userServiceFeePayerAccount = Account.createFromPrivateKey(
     uploadEncryptedFileChunkInfo.userServiceFeePayerAccountPrivateKeyString,
@@ -77,6 +80,8 @@ export const sendAggregateCompleteTransactionToUploadEncryptedFileChunk = async 
     fileUpdated: uploadEncryptedFileChunkInfo.file.fileUpdated,
     fileMd5Hash: uploadEncryptedFileChunkInfo.file.fileMd5Hash,
     fileMimeType: uploadEncryptedFileChunkInfo.file.fileMimeType,
+    chunkIndex: uploadEncryptedFileChunkInfo.transactionInfo.index,
+    chunkLength: uploadEncryptedFileChunkInfo.transactionInfo.length,
   };
   logger.debug(messageJson);
   const messageString = JSON.stringify(messageJson);
@@ -174,16 +179,19 @@ export const sendAggregateCompleteTransactionToUploadEncryptedFileChunk = async 
   const transactionPayload = signedAggregateCompleteTransactionWithCosignatures.payload;
   logger.debug({
     transactionHash,
-    transactionPayload,
+    // transactionPayload,
   });
   const now = new Date();
-  const transaction: AdminUserTransaction = {
+  const transaction: PrivateUserFileTransaction = {
     transactionId,
     transactionHash,
     transactionPayload,
     transactionStatus: 'PENDING',
     transactionCreatedAt: now,
     transactionUpdatedAt: now,
+    transactionIndex: uploadEncryptedFileChunkInfo.transactionInfo.index,
+    transactionLength: uploadEncryptedFileChunkInfo.transactionInfo.length,
+    transactionEncryptedChunks: uploadEncryptedFileChunkInfo.transactionInfo.chunks,
   };
 
   const transactionPath = `/v/1/types/private/users/${uploadEncryptedFileChunkInfo.userId}/files/${uploadEncryptedFileChunkInfo.file.fileId}/transactions/${transactionId}`;
@@ -202,7 +210,7 @@ export const sendAggregateCompleteTransactionToUploadEncryptedFileChunk = async 
     await listener.open();
     listener.status(userMultisigAccount.address).subscribe(async (transactionStatusError) => {
       logger.error({ transactionStatusError });
-      const error = Error(JSON.stringify(transactionStatusError));
+      const error = Error('transaction announce error');
       errors.push(error);
       const transactionStatusUpdate: Partial<AdminUserTransaction> = {
         transactionStatus: 'ERROR',
@@ -213,6 +221,12 @@ export const sendAggregateCompleteTransactionToUploadEncryptedFileChunk = async 
     });
     listener.unconfirmedAdded(userMultisigAccount.address).subscribe(async (unconfirmedTransaction) => {
       logger.debug({ unconfirmedTransaction });
+      const transactionInfo = unconfirmedTransaction.transactionInfo as TransactionInfo;
+      const hash = transactionInfo.hash;
+      logger.debug({ hash });
+      if (hash !== transactionHash) {
+        return;
+      }
       const transactionStatusUpdate: Partial<AdminUserTransaction> = {
         transactionStatus: 'UNCONFIRMED',
         transactionUpdatedAt: new Date(),
@@ -221,6 +235,12 @@ export const sendAggregateCompleteTransactionToUploadEncryptedFileChunk = async 
     });
     listener.confirmed(userMultisigAccount.address).subscribe(async (confirmedTransaction) => {
       logger.debug({ confirmedTransaction });
+      const transactionInfo = confirmedTransaction.transactionInfo as TransactionInfo;
+      const hash = transactionInfo.hash;
+      logger.debug({ hash });
+      if (hash !== transactionHash) {
+        return;
+      }
       const now = new Date();
       const transactionStatusUpdate: Partial<AdminUserTransaction> = {
         transactionStatus: 'CONFIRMED',

@@ -14,6 +14,7 @@ import {
   CosignatureSignedTransaction,
   TransactionMapping,
   RepositoryFactoryHttp,
+  TransactionInfo,
 } from 'symbol-sdk';
 import { AdminUser } from '../../../v1/models/adminUser';
 import { AdminUserTransaction } from '../../../v1/models/adminUserTransaction';
@@ -37,7 +38,6 @@ export const sendAggregateCompleteTransactionToCreateAndSetUpNewAccount = async 
   createAndSetUpNewAccountInfo: CreateAndSetUpNewAccountInfo,
 ) => {
   logger.debug('sendAggregateCompleteTransactionToCreateAndSetUpNewAccount start');
-  logger.debug({ createAndSetUpNewAccountInfo });
 
   const userServiceFeePayerAccount = Account.createFromPrivateKey(
     createAndSetUpNewAccountInfo.userServiceFeePayerAccountPrivateKeyString,
@@ -303,7 +303,7 @@ export const sendAggregateCompleteTransactionToCreateAndSetUpNewAccount = async 
     await listener.open();
     listener.status(userMultisigAccount.address).subscribe(async (transactionStatusError) => {
       logger.error({ transactionStatusError });
-      const error = Error(JSON.stringify(transactionStatusError));
+      const error = Error('transaction announce error');
       errors.push(error);
       const transactionStatusUpdate: Partial<AdminUserTransaction> = {
         transactionStatus: 'ERROR',
@@ -316,6 +316,12 @@ export const sendAggregateCompleteTransactionToCreateAndSetUpNewAccount = async 
     });
     listener.unconfirmedAdded(userMultisigAccount.address).subscribe(async (unconfirmedTransaction) => {
       logger.debug({ unconfirmedTransaction });
+      const transactionInfo = unconfirmedTransaction.transactionInfo as TransactionInfo;
+      const hash = transactionInfo.hash;
+      logger.debug({ hash });
+      if (hash !== transactionHash) {
+        return;
+      }
       const transactionStatusUpdate: Partial<AdminUserTransaction> = {
         transactionStatus: 'UNCONFIRMED',
         transactionUpdatedAt: new Date(),
@@ -326,6 +332,12 @@ export const sendAggregateCompleteTransactionToCreateAndSetUpNewAccount = async 
     });
     listener.confirmed(userMultisigAccount.address).subscribe(async (confirmedTransaction) => {
       logger.debug({ confirmedTransaction });
+      const transactionInfo = confirmedTransaction.transactionInfo as TransactionInfo;
+      const hash = transactionInfo.hash;
+      logger.debug({ hash });
+      if (hash !== transactionHash) {
+        return;
+      }
       const now = new Date();
       const transactionStatusUpdate: Partial<AdminUserTransaction> = {
         transactionStatus: 'CONFIRMED',

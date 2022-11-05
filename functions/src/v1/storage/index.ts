@@ -10,7 +10,7 @@ import { hasAlreadyTriggered } from '../../utils/firebase/hasAlreadyTriggered';
 import { logger } from '../../utils/firebase/logger';
 import { db, storage } from '../../utils/firebase/firebase';
 import { sliceChunksByNumber, stringToChunks } from '../../utils/file';
-import { createEncryptedMessageString, decryptEncryptedMessageString } from '../../utils/symbol/message';
+import { createEncryptedMessageString } from '../../utils/symbol/message';
 import { AdminUser } from '../models/adminUser';
 import { decrypt } from '../../utils/cipher/encrypt';
 import { PrivateUserFile } from '../../v1/models/privateUserFile';
@@ -22,7 +22,6 @@ import {
 
 const SERVICE_ENCRYPT_KEY = defineSecret('SERVICE_ENCRYPT_KEY');
 const SERVICE_FEE_PAYER_ACCOUNT_PRIVATE_KEY = defineSecret('SERVICE_FEE_PAYER_ACCOUNT_PRIVATE_KEY');
-const SERVICE_STORAGE_ACCOUNT_PRIVATE_KEY = defineSecret('SERVICE_STORAGE_ACCOUNT_PRIVATE_KEY');
 
 const _exportFunction = (name: string, f: () => CloudFunction<ObjectMetadata>) =>
   exportFunction(['v1', 'storage', name], exports, f);
@@ -30,7 +29,7 @@ const _exportFunction = (name: string, f: () => CloudFunction<ObjectMetadata>) =
 _exportFunction('onFinalize', () =>
   functions()
     .runWith({
-      secrets: ['SERVICE_ENCRYPT_KEY', 'SERVICE_FEE_PAYER_ACCOUNT_PRIVATE_KEY', 'SERVICE_STORAGE_ACCOUNT_PRIVATE_KEY'],
+      secrets: ['SERVICE_ENCRYPT_KEY', 'SERVICE_FEE_PAYER_ACCOUNT_PRIVATE_KEY'],
       timeoutSeconds: 540,
     })
     .storage.object()
@@ -85,8 +84,6 @@ _exportFunction('onFinalize', () =>
         adminUser.userSaltBase64String,
         adminUser.userIvHexString,
       );
-      // Todo: 後で消す
-      const userServiceStorageAccountPrivateKeyString = SERVICE_STORAGE_ACCOUNT_PRIVATE_KEY.value();
       logger.debug('Decrypted');
 
       const regExpFileId = /files\/[0-9a-zA-Z]*/;
@@ -114,7 +111,12 @@ _exportFunction('onFinalize', () =>
         fileUpdated,
         fileMd5Hash,
         fileMimeType,
+        fileName,
+        fileBucket: object.bucket,
+        fileMetaGeneration: object.metageneration,
+        fileFullPath: object.name,
       };
+      await db.doc(`/v/1/types/private/users/${userId}/files/${fileId}`).set(file, { merge: true });
 
       const localFilePath = `/tmp/${fileName}`;
       logger.debug({ localFilePath });
@@ -131,8 +133,8 @@ _exportFunction('onFinalize', () =>
         const targetFileHexString = targetFileBuffer.toString('hex');
         const targetFileHexStringLength = targetFileHexString.length;
         logger.debug({ targetFileHexStringLength });
-        // Note: メッセージ最大サイズ1024バイト、先頭1バイト、メッセージの暗号化でサイズが増加する分28バイトを加味
-        const targetFileHexStringChunks = stringToChunks(targetFileHexString, 1024 - 1 - 28);
+        // Note: メッセージ最大サイズ1024バイト、先頭1文字、メッセージの暗号化でサイズが増加する分28文字を加味
+        const targetFileHexStringChunks = stringToChunks(targetFileHexString, Math.floor((1024 - 1 * 2 - 28 * 2) / 2));
         logger.debug(targetFileHexStringChunks.length);
         const targetFileEncryptedHexStringChunks = targetFileHexStringChunks.map((targetFileHexStringChunk) => {
           const encryptedMessageHexString = createEncryptedMessageString(
@@ -143,6 +145,7 @@ _exportFunction('onFinalize', () =>
           return encryptedMessageHexString;
         });
         const chunks = sliceChunksByNumber(targetFileEncryptedHexStringChunks, 99);
+        logger.debug({ chunksLength: chunks.length });
         logger.debug({ chunks });
         const privateUserFileTransactions: PrivateUserFileTransactionInfo[] = sliceChunksByNumber(
           targetFileEncryptedHexStringChunks,
@@ -159,6 +162,7 @@ _exportFunction('onFinalize', () =>
             }),
           };
         });
+        logger.debug(privateUserFileTransactions.length);
         for (let index = 0; index < privateUserFileTransactions.length; index++) {
           const privateUserFileTransaction = privateUserFileTransactions[index];
           const uploadEncryptedFileChunkInfo: UploadEncryptedFileChunkInfo = {
@@ -174,33 +178,6 @@ _exportFunction('onFinalize', () =>
           await sendAggregateCompleteTransactionToUploadEncryptedFileChunk(uploadEncryptedFileChunkInfo);
         }
         logger.debug(targetFileEncryptedHexStringChunks.length);
-        logger.debug(targetFileEncryptedHexStringChunks.map((chunk) => chunk.length));
-        const plainMessage = targetFileHexStringChunks[0];
-        logger.debug({ plainMessage });
-        logger.debug(plainMessage.length);
-        const encryptedMessageHexString = createEncryptedMessageString(
-          plainMessage,
-          adminUser.userServiceStorageAccountPublicKeyString,
-          userMultisigAccountPrivateKeyString,
-        );
-        logger.debug({ encryptedMessageHexString });
-        const encryptedMessageBuffer = Buffer.from(encryptedMessageHexString, 'hex');
-        logger.debug({ encryptedMessageBuffer });
-        logger.debug({ encryptedMessageBufferLength: encryptedMessageBuffer.length });
-        const decryptedMessageHexString = decryptEncryptedMessageString(
-          encryptedMessageHexString,
-          adminUser.userServiceStorageAccountPublicKeyString,
-          userMultisigAccountPrivateKeyString,
-          adminUser.userServiceStorageAccountPublicKeyString,
-        );
-        logger.debug({ decryptedMessageHexString });
-        const decryptedMessageHexStringOnRecipient = decryptEncryptedMessageString(
-          encryptedMessageHexString,
-          adminUser.userMultisigAccountPublicKeyString,
-          userServiceStorageAccountPrivateKeyString,
-          adminUser.userServiceStorageAccountPublicKeyString,
-        );
-        logger.debug({ decryptedMessageHexStringOnRecipient });
         const downloadedMd5Hash = crypto.createHash('md5').update(targetFileBuffer).digest('base64');
         logger.debug({ downloadedMd5Hash });
         fs.unlinkSync(localFilePath);
