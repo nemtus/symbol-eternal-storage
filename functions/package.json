@@ -18,7 +18,7 @@
     "firebase-admin": "^10.2.0",
     "firebase-functions": "^3.21.0",
     "rxjs": "^7.5.7",
-    "symbol-sdk": "^2.0.0"
+    "symbol-sdk": "^2.0.3"
   },
   "devDependencies": {
     "typescript": "^4.6.4"

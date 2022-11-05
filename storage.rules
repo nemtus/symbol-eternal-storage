@@ -1,8 +1,37 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
+    // auth rule functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return request.auth.token.admin == true;
+    }
+
+    function isAdminAuthenticated() {
+      return isAuthenticated() && isAdmin();
+    }
+
+    function isUserAuthenticated(userId) {
+      return isAuthenticated() && userId == request.auth.uid;
+    }
+
+    function isUserOrAdminAuthenticated(userId) {
+      return isUserAuthenticated(userId) || isAdminAuthenticated();
+    }
+
+    // deny all with default
     match /{allPaths=**} {
       allow read, write: if false;
+    }
+
+    // for authenticated user or admin
+    match /v/1/types/private/users/{userId}/files/{fileId}/{allPaths=**} {
+      allow get: if isUserOrAdminAuthenticated(userId);
+      allow list: if isUserOrAdminAuthenticated(userId);
+      allow create: if isUserOrAdminAuthenticated(userId);
     }
   }
 }

@@ -1,15 +1,14 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
+import PrivateUserFileUploadFormWidgetComponent from '../../../../widgets/form/PrivateUserFileUploadForm';
 
 const FileCreatePageComponent = () => {
   const { userId } = useParams();
 
-  return (
-    <div>
-      <h2>File Create</h2>
-      <div>userId is {userId}</div>
-    </div>
-  );
+  if (!userId) {
+    return null;
+  }
+  return <PrivateUserFileUploadFormWidgetComponent userId={userId} />;
 };
 
 export default FileCreatePageComponent;
