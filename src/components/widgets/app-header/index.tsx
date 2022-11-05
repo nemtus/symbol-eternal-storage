@@ -2,6 +2,7 @@ import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHome, faBars, faFile, faUserGear, faUser, faArrowRightFromBracket } from '@fortawesome/free-solid-svg-icons';
 import { useAuthUserContext } from '../../../contexts/auth';
+import SymbolBlockchainLogo from '../../../images/symbol-logo-primary-light-bg-01.png';
 
 const AppHeaderWidgetComponent = () => {
   const { authUser, signOut } = useAuthUserContext();
@@ -37,6 +38,7 @@ const AppHeaderWidgetComponent = () => {
       </div>
       <div className="navbar-center">
         <a className="btn btn-ghost normal-case text-xl" href="/">
+          <img className="w-5 h-5 mt-1 mr-2" src={SymbolBlockchainLogo} alt="Symbol Blockchain Logo" />
           Symbol Eternal Storage
         </a>
       </div>

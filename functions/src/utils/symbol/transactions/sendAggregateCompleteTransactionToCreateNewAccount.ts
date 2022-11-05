@@ -37,6 +37,7 @@ export const sendAggregateCompleteTransactionToCreateAndSetUpNewAccount = async 
   createAndSetUpNewAccountInfo: CreateAndSetUpNewAccountInfo,
 ) => {
   logger.debug('sendAggregateCompleteTransactionToCreateAndSetUpNewAccount start');
+  logger.debug({ createAndSetUpNewAccountInfo });
 
   const userServiceFeePayerAccount = Account.createFromPrivateKey(
     createAndSetUpNewAccountInfo.userServiceFeePayerAccountPrivateKeyString,

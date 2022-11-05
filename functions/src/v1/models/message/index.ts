@@ -9,3 +9,13 @@ export interface BaseMessage {
 export interface CreateAndSetUpNewAccountMessage extends BaseMessage {
   type: 'createAndSetUpNewAccount';
 }
+
+export interface UploadEncryptedFileChunkMessage extends BaseMessage {
+  type: 'uploadEncryptedFileChunk';
+  fileId: string; // Note: 各サービスで管理しているファイルのID
+  fileSize: number; // Notwe: ファイルサイズ
+  fileTimeCreated: string; // Note: 各サービスで管理しているプラットフォーム上でのファイルの作成日時
+  fileUpdated: string; // Note: 各サービスで管理しているプラットフォーム上でのファイルの更新日時
+  fileMd5Hash: string; // Note: ファイルのMD5ハッシュ
+  fileMimeType: string; // Note: ファイルのMIMEタイプ
+}
