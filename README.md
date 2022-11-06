@@ -1,4 +1,27 @@
-# Getting Started with Create React App
+# Symbol Eternal Storage
+
+- 使用したtech stacks
+  - React, Firebase
+- 使用したBlockchain
+  - Symbol
+- deployしたContract
+  - Symbolにはコントラクトをデプロイするという概念はありませんが以下のようなトランザクションを利用しました。
+  - アグリゲートトランザクション(ユーザー新規登録時)
+    - 平文メッセージ付き転送トランザクション
+    - マルチシグトランザクション
+    - アドレス制限トランザクション
+  - アグリゲートトランザクション(ファイルデータアップロード時)
+    - 平文メッセージ付き転送トランザクション
+    - 暗号化メッセージ付き転送トランザクション
+- application codeやその他のfile
+  - 本レポジトリに全て入っています。
+- テスト手順を含むリポジトリへのリンク
+- 審査やテストのためにプロジェクトにアクセスする方法など
+  - [https://symbol-eternal-storage-test.web.app/](https://symbol-eternal-storage-test.web.app/) にアクセスし、
+  - Sign in with Googleボタンからログインして、
+  - ユーザー情報がReadyになったら、
+  - ホームページのEngrave your fileボタンの画面からファイルをアップロードしてください。
+  - アップロード後にアップロード結果が表示されます。
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 

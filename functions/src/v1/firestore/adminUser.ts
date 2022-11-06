@@ -50,25 +50,25 @@ _exportFunction('onCreate', () =>
       const userMultisigAccountPrivateKeyString = decrypt(
         adminUser.userMultisigAccountPrivateKeyEncryptedString,
         serviceEncryptKey,
-        adminUser.userSaltBase64String,
+        adminUser.userSaltHexString,
         adminUser.userIvHexString,
       );
       const userCosigner1AccountPrivateKeyString = decrypt(
         adminUser.userCosigner1AccountPrivateKeyEncryptedString,
         serviceEncryptKey,
-        adminUser.userSaltBase64String,
+        adminUser.userSaltHexString,
         adminUser.userIvHexString,
       );
       const userCosigner2AccountPrivateKeyString = decrypt(
         adminUser.userCosigner2AccountPrivateKeyEncryptedString,
         serviceEncryptKey,
-        adminUser.userSaltBase64String,
+        adminUser.userSaltHexString,
         adminUser.userIvHexString,
       );
       const userCosigner3AccountPrivateKeyString = decrypt(
         adminUser.userCosigner3AccountPrivateKeyEncryptedString,
         serviceEncryptKey,
-        adminUser.userSaltBase64String,
+        adminUser.userSaltHexString,
         adminUser.userIvHexString,
       );
       logger.debug('Decrypted');

@@ -266,6 +266,7 @@ export const sendAggregateCompleteTransactionToUploadEncryptedFileChunk = async 
   if (errors.length === 0) {
     logger.debug('success on 1st try');
     logger.debug('sendAggregateCompleteTransactionToUploadEncryptedFileChunk end');
+    return;
   }
 
   logger.error('failed on 1st try');
