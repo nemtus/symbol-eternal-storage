@@ -31,6 +31,7 @@ _exportFunction('onFinalize', () =>
     .runWith({
       secrets: ['SERVICE_ENCRYPT_KEY', 'SERVICE_FEE_PAYER_ACCOUNT_PRIVATE_KEY'],
       timeoutSeconds: 540,
+      memory: '8GB',
     })
     .storage.object()
     .onFinalize(async (object, context) => {
