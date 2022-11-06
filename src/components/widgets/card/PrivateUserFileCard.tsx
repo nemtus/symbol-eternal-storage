@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ref, storage, addDoc, uploadBytes, getDownloadURL, setDoc } from '../../../utils/firebase';
+import { ref, storage, getDownloadURL } from '../../../utils/firebase';
 import { PrivateUserFile } from '../../../models/privateUserFile';
 
 const PrivateUserFileWidgetCardComponent = (props: { privateUserFile: PrivateUserFile }) => {
