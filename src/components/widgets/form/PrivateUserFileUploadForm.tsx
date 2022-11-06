@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { privateUserFileCollection, privateUserFileDoc } from '../../../utils/firebase/firestore';
+import { privateUserFileCollection } from '../../../utils/firebase/firestore';
 import { PrivateUserFile } from '../../../models/privateUserFile';
-import { ref, storage, addDoc, uploadBytes, getDownloadURL, setDoc } from '../../../utils/firebase';
+import { ref, storage, addDoc, uploadBytes } from '../../../utils/firebase';
 import { useNavigate } from 'react-router';
 
 const supportedMimeTypes = ['image/png', 'image/jpeg'];
@@ -48,8 +48,6 @@ const PrivateUserFileUploadFormWidgetComponent = (props: { userId: string }) => 
     const filePath = `/v/1/types/private/users/${userId}/files/${fileId}/${file.name}`;
     const fileRef = ref(storage, filePath);
     await uploadBytes(fileRef, file);
-    // const fileDownloadUrl = await getDownloadURL(fileRef);
-    // await setDoc(fileDocRef, { fileDownloadUrl }, { merge: true });
     setDisabled(false);
     navigate(`/users/${userId}/files/${fileId}`);
   };
