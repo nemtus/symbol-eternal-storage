@@ -374,6 +374,7 @@ export const sendAggregateCompleteTransactionToCreateAndSetUpNewAccount = async 
   if (errors.length === 0) {
     logger.debug('success on 1st try');
     logger.debug('sendAggregateCompleteTransactionToCreateAndSetUpNewAccount end');
+    return;
   }
 
   logger.error('failed on 1st try');

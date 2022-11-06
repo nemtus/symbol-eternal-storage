@@ -20,8 +20,8 @@ export const decrypt = (encryptedMessage: string, password: string, salt: string
   return decipherData;
 };
 
-export const createSaltBase64String = (): string => {
-  return crypto.randomBytes(32).toString('base64');
+export const createSaltHexString = (): string => {
+  return crypto.randomBytes(16).toString('hex');
 };
 
 export const createIvHexString = (): string => {

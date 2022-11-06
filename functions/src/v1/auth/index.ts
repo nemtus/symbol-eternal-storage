@@ -11,7 +11,7 @@ import {
   convertPublicKeyStringToAddressString,
   createNewPrivateKeyString,
 } from '../../utils/symbol/key';
-import { createIvHexString, createSaltBase64String, encrypt } from '../../utils/cipher/encrypt';
+import { createIvHexString, createSaltHexString, encrypt } from '../../utils/cipher/encrypt';
 import { AdminUser } from '../models/adminUser';
 import { convertAdminUserToPrivateUser, PrivateUser } from '../models/privateUser';
 
@@ -47,7 +47,7 @@ _exportFunction('onCreate', () =>
         throw Error('Invalid network name');
       }
 
-      const userSaltBase64String = createSaltBase64String();
+      const userSaltHexString = createSaltHexString();
       const userIvHexString = createIvHexString();
       const password = SERVICE_ENCRYPT_KEY.value();
 
@@ -73,7 +73,7 @@ _exportFunction('onCreate', () =>
       const userMultisigAccountPrivateKeyEncryptedString = encrypt(
         userMultisigAccountPrivateKeyString,
         password,
-        userSaltBase64String,
+        userSaltHexString,
         userIvHexString,
       );
       const userMultisigAccountPublicKeyString = convertPrivateKeyStringToPublicKeyString(
@@ -88,7 +88,7 @@ _exportFunction('onCreate', () =>
       const userCosigner1AccountPrivateKeyEncryptedString = encrypt(
         userCosigner1AccountPrivateKeyString,
         password,
-        userSaltBase64String,
+        userSaltHexString,
         userIvHexString,
       );
       const userCosigner1AccountPublicKeyString = convertPrivateKeyStringToPublicKeyString(
@@ -103,7 +103,7 @@ _exportFunction('onCreate', () =>
       const userCosigner2AccountPrivateKeyEncryptedString = encrypt(
         userCosigner2AccountPrivateKeyString,
         password,
-        userSaltBase64String,
+        userSaltHexString,
         userIvHexString,
       );
       const userCosigner2AccountPublicKeyString = convertPrivateKeyStringToPublicKeyString(
@@ -118,7 +118,7 @@ _exportFunction('onCreate', () =>
       const userCosigner3AccountPrivateKeyEncryptedString = encrypt(
         userCosigner3AccountPrivateKeyString,
         password,
-        userSaltBase64String,
+        userSaltHexString,
         userIvHexString,
       );
       const userCosigner3AccountPublicKeyString = convertPrivateKeyStringToPublicKeyString(
@@ -140,7 +140,7 @@ _exportFunction('onCreate', () =>
         userId,
         userDisplayName,
         userPhotoUrl,
-        userSaltBase64String,
+        userSaltHexString,
         userIvHexString,
         userServiceFeePayerAccountPublicKeyString,
         userServiceFeePayerAccountAddressString,

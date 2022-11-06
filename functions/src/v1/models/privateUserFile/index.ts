@@ -24,6 +24,8 @@ export interface PrivateUserFile {
   fileContentEncoding?: string;
   fileContentLanguage?: string;
   fileMimeType: string; // Note: this is called contentType in storage for firebase
+
+  fileDownloadUrl?: string;
 }
 
 type OpenSeaAttribute =

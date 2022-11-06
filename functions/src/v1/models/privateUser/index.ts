@@ -4,7 +4,7 @@ export interface PrivateUser {
   userId: string;
   userDisplayName: string;
   userPhotoUrl: string;
-  userSaltBase64String: string;
+  userSaltHexString: string;
   userIvHexString: string;
   userServiceFeePayerAccountPublicKeyString: string;
   userServiceFeePayerAccountAddressString: string;

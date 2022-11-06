@@ -45,9 +45,18 @@ const UserPageComponent = () => {
       navigate('/not-authenticated');
       return;
     }
-    privateUserDocumentData.userCreatedAt = privateUserDocumentData.userCreatedAt.toDate();
-    privateUserDocumentData.userUpdatedAt = privateUserDocumentData.userUpdatedAt.toDate();
-    setPrivateUser(privateUserDocumentData as PrivateUser);
+    try {
+      privateUserDocumentData.userCreatedAt = privateUserDocumentData.userCreatedAt.toDate();
+      setPrivateUser(privateUserDocumentData as PrivateUser);
+    } catch (error) {
+      console.error(error);
+    }
+    try {
+      privateUserDocumentData.userUpdatedAt = privateUserDocumentData.userUpdatedAt.toDate();
+      setPrivateUser(privateUserDocumentData as PrivateUser);
+    } catch (error) {
+      console.error(error);
+    }
     if (privateUserTransactionCollectionDataLoading) {
       return;
     }
@@ -55,11 +64,21 @@ const UserPageComponent = () => {
       return;
     }
     privateUserTransactionCollectionData.forEach((privateUserTransaction, index) => {
-      privateUserTransaction.transactionCreatedAt = privateUserTransaction.transactionCreatedAt.toDate();
-      privateUserTransaction.transactionUpdatedAt = privateUserTransaction.transactionUpdatedAt.toDate();
-      privateUserTransactionCollectionData[index] = privateUserTransaction;
+      try {
+        privateUserTransaction.transactionCreatedAt = privateUserTransaction.transactionCreatedAt.toDate();
+        privateUserTransactionCollectionData[index] = privateUserTransaction;
+        setPrivateUserTransactions(privateUserTransactionCollectionData as PrivateUserTransaction[]);
+      } catch (error) {
+        console.error(error);
+      }
+      try {
+        privateUserTransaction.transactionUpdatedAt = privateUserTransaction.transactionUpdatedAt.toDate();
+        privateUserTransactionCollectionData[index] = privateUserTransaction;
+        setPrivateUserTransactions(privateUserTransactionCollectionData as PrivateUserTransaction[]);
+      } catch (error) {
+        console.error(error);
+      }
     });
-    setPrivateUserTransactions(privateUserTransactionCollectionData as PrivateUserTransaction[]);
   }, [
     authUserLoading,
     privateUserDocumentDataLoading,

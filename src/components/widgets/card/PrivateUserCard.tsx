@@ -3,6 +3,16 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCopy, faKey } from '@fortawesome/free-solid-svg-icons';
 import { PrivateUser } from '../../../models/privateUser';
 import DefaultProfileImage from '../../../images/default-profile-image.png';
+import { functions, httpsCallable } from '../../../utils/firebase';
+import {
+  HttpsOnCallBackupRecoveryKeyFileRequest,
+  HttpsOnCallBackupRecoveryKeyFileResponse,
+} from '../../../models/httpsOnCallBackupRecoveryKeyFile';
+
+const v1HttpsOnCallBackupRecoveryKeyFile = httpsCallable<
+  HttpsOnCallBackupRecoveryKeyFileRequest,
+  HttpsOnCallBackupRecoveryKeyFileResponse
+>(functions, 'v1-https-onCall-backupRecoveryKeyFile');
 
 const PrivateUserCardWidgetComponent = (privateUser: PrivateUser) => {
   const {
@@ -20,9 +30,14 @@ const PrivateUserCardWidgetComponent = (privateUser: PrivateUser) => {
   };
 
   const handleClickBackupYourRecoveryKeyFile = async (userId: string) => {
-    // Todo: 以下は未実装でダミーの処理のため復元用の鍵のダウンロード処理を実装する必要あり
-    await navigator.clipboard.writeText(userId);
-    console.log(userId);
+    const backupRecoveryKeyFileResponse = (await v1HttpsOnCallBackupRecoveryKeyFile({ userId })).data;
+    const backupRecoveryKeyFileJsonString = JSON.stringify(backupRecoveryKeyFileResponse, null, 2);
+    const blob = new Blob([backupRecoveryKeyFileJsonString], { type: 'application/json' });
+    const url = window.URL.createObjectURL(blob);
+    const dummyElement = document.createElement('a');
+    dummyElement.href = url;
+    dummyElement.setAttribute('download', 'BackupRecoveryKeyFile.txt');
+    dummyElement.click();
   };
 
   return (
@@ -49,7 +64,13 @@ const PrivateUserCardWidgetComponent = (privateUser: PrivateUser) => {
           <div className="stats max-w-md">
             <div className="stat">
               <div className="stat-title">Status</div>
-              <div className="stat-value">{userAccountPrepared ? 'READY' : 'NOT READY'}</div>
+              <div className="stat-value">
+                {userAccountPrepared ? (
+                  <span className="bg-success">READY</span>
+                ) : (
+                  <span className="bg-error">NOT READY</span>
+                )}
+              </div>
               <div className="stat-desc">Status of account set up</div>
             </div>
             <div className="stat">
@@ -103,7 +124,7 @@ const PrivateUserCardWidgetComponent = (privateUser: PrivateUser) => {
             </div>
             <div className="stat">
               <div className="stat-title">Day</div>
-              <div className="stat-value">{userCreatedAt.getDay()}</div>
+              <div className="stat-value">{userCreatedAt.getDate()}</div>
               <div className="stat-desc">Created at</div>
             </div>
             <div className="stat">
@@ -137,7 +158,7 @@ const PrivateUserCardWidgetComponent = (privateUser: PrivateUser) => {
             </div>
             <div className="stat">
               <div className="stat-title">Day</div>
-              <div className="stat-value">{userUpdatedAt.getDay()}</div>
+              <div className="stat-value">{userUpdatedAt.getDate()}</div>
               <div className="stat-desc">Updated at</div>
             </div>
             <div className="stat">
@@ -158,7 +179,6 @@ const PrivateUserCardWidgetComponent = (privateUser: PrivateUser) => {
           </div>
         </div>
         <div className="card-actions justify-center">
-          {/* Todo: 現時点ではこのボタンは機能しない、復元用の鍵のファイルをダウンロードする機能を実装する必要あり */}
           <button
             className="btn btn-primary"
             onClick={async () => {
